@@ -9,7 +9,8 @@ var config = {
             debug: false
         }
     },
-    scene: [Scene1, Scene2, Scene3]
+    //la importante es la primera, que es la que arranca
+    scene: [Scene1, Scene3, Scene2]
 };
 
 var game = new Phaser.Game(config);
@@ -23,7 +24,12 @@ var bombs;
 var platforms;
 var cursors;
 var scoreText;
+var dudeStateText;
 
 var timedEvent;
 var initialTime;
 var timeText;
+
+var patron;
+
+var hongo;

@@ -20,8 +20,10 @@ class Scene2 extends Phaser.Scene {
         platforms.create(50, 250, 'ground');
         platforms.create(750, 220, 'ground');
 
+
         // The player and its settings
         player = this.physics.add.sprite(100, 450, 'dude');
+
 
         //  Player physics properties. Give the little guy a slight bounce.
         player.setBounce(0.2);
@@ -46,24 +48,36 @@ class Scene2 extends Phaser.Scene {
             //  Give each star a slightly different bounce
             
             child.setBounceY(Phaser.Math.FloatBetween(0.6, 0.9));
-            child.x += Phaser.Math.FloatBetween(-15, 15) 
-            if (Phaser.Math.FloatBetween(0, 1) > 0.5){
-                child.score = 15;
-                child.setTint(0xff0000);
+            
+            child.x += Phaser.Math.FloatBetween(-15, 15);            
+
+            patron = Phaser.Math.FloatBetween(0, 1);
+            if (patron < 0.1){
+                child.score = 20;
+                child.extratime = 10;
+                //child.setTint(0xff0000);
+                child.setTexture('tomato');
             } 
             else
             {
-                child.score = 10;
+                if (patron > 0.55){
+                    child.score = 15;
+                    child.extratime = 5;
+                    //child.setTint(0x00ff00);
+                    child.setTexture('carrot');
+                }
+                else{
+                    child.score = 10;
+                    child.extratime = 0;
+                }
             }
-            
-
+        
         });
 
         bombs = this.physics.add.group();
 
         //  The score
         scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
-
 
         //  Collide the player and the stars with the platforms
         this.physics.add.collider(player, platforms);
@@ -88,7 +102,41 @@ class Scene2 extends Phaser.Scene {
         this.jumps = 0;
 
 
+        // Interactive dude
+        player.setInteractive();
+        this.input.setDraggable(player);
+    
+        this.input.on('dragstart', function (pointer, gameObject) {
+            gameObject.setTint(0x0000ff);            
+        });
+
+        this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+            gameObject.x = dragX;
+            gameObject.y = dragY;
+        });
+        
+        this.input.on('dragend', function (pointer, gameObject) {
+            gameObject.clearTint();
+
+            //Deshabilitar inputs
+            //player.input.enabled = false;
+            //player.input.draggable = false;
+            //gameObject.disableInteractive();            
+        });
+
+
+        dudeStateText = this.add.text(16, 550, '', { fontSize: '32px', fill: '#000' });
+        player.on('pointerover', function () {
+            dudeStateText.setText('Puntero en Player'); 
+        });
+        player.on('pointerout', function () {            
+            dudeStateText.setText('Puntero fuera de Player');
+        });
+        
     }
+
+
+        
 
     update ()
     {
@@ -130,6 +178,9 @@ class Scene2 extends Phaser.Scene {
         score += star.score //10;
         scoreText.setText('Score: ' + score);
 
+        initialTime += star.extratime
+        timeText.setText('Countdown: ' + initialTime);
+
         if (stars.countActive(true) === 0)
         {
             //  A new batch of stars to collect
@@ -150,6 +201,8 @@ class Scene2 extends Phaser.Scene {
             initialTime = 30
 
         }
+
+
     }
 
 
@@ -170,14 +223,21 @@ class Scene2 extends Phaser.Scene {
         var gameOverButton = this.add.text(700, 500, 'Game Over', { fontFamily: 'Arial', fontSize: 70, color: '#ff0000' })
         .setInteractive()
         .on('pointerdown', () => this.scene.start('creditos'));
-        Phaser.Display.Align.In.Center(gameOverButton, this.add.zone(400, 300, 800, 600));    
+        
+        //var gameOverButton = this.add.text(700, 500, 'Game Over', { fontFamily: 'Arial', fontSize: 70, color: '#ff0000' })
+        //gameOverButton.setInteractive()
+        ///gameOverButton.on('pointerdown', () => this.scene.start('creditos'));        
+        
+        Phaser.Display.Align.In.Center(gameOverButton, this.add.zone(200, 300, 200, 300)); 
+        
+        timedEvent.paused = true;
     }
     
     onSecond() {
         initialTime = initialTime - 1; // One second
         timeText.setText('Countdown: ' + initialTime);
         if (initialTime == 0) {
-            timedEvent.paused = true;
+            
             this.gameOver()
         }
         
